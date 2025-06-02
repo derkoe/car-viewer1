@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import type { Vehicle } from "../../types";
 
 const { id } = Astro.params;
 const response = await fetch(
@@ -8,7 +9,7 @@ const response = await fetch(
 if (!response.ok) {
   throw new Error("Failed to fetch vehicle data");
 }
-const vehicle = await response.json();
+const vehicle = (await response.json()) as Vehicle;
 const currencyFormat = new Intl.NumberFormat("de-DE", {
   style: "currency",
   currency: "EUR",
@@ -16,22 +17,121 @@ const currencyFormat = new Intl.NumberFormat("de-DE", {
 ---
 
 <Layout>
-  <main>
-    <h1>Welcome to Astro!</h1>
+  <main class="bg-gray-100 min-h-screen py-8">
     {
       vehicle && (
-        <div>
-          <h2>{vehicle.overview.header}</h2>
-          <p>{vehicle.overview.subHeader}</p>
-          <p>Price: {currencyFormat.format(vehicle.overview.price)}</p>
-        </div>
-        <div>
-          <h3>Dealer Information</h3>
-          <p>{vehicle.overview.vehicleLocation.name}</p>
-          <p>
-            {vehicle.overview.vehicleLocation.street}<br />
-            {vehicle.overview.vehicleLocation.postalCode} {vehicle.overview.vehicleLocation.city}
-          </p>
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Left: Car Images */}
+          <div class="md:col-span-2 flex flex-col gap-4">
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+              <img
+                src={`${vehicle.overview.imageUrls[0]}/webp/768`}
+                alt={vehicle.overview.header}
+                class="w-full max-w-xl rounded-lg object-cover"
+              />
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+              <h2 class="text-2xl font-bold mb-2">{vehicle.overview.header}</h2>
+              <p class="text-gray-600 mb-4">{vehicle.overview.subHeader}</p>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <>
+                    <span class="font-semibold">Erstzulassung:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.initialRegistrationDate
+                    ?.toString()
+                    .slice(0, 10) || "-"}
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Kilometerstand:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.mileage?.toLocaleString("de-DE")} km
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Leistung:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.powerPs} PS (
+                  {vehicle.technicalData.powerKw} kW)
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Getriebe:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.gearTypeText}
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Treibstoff:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.fuelText}
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Antrieb:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.driveText}
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Hubraum:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.motorCapacity} ccm
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Anzahl Türen:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.doors}
+                </div>
+                <div>
+                  <>
+                    <span class="font-semibold">Farbe:</span>
+                    <br />
+                  </>
+                  {vehicle.technicalData.colorText}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Right: Price & Dealer */}
+          <div class="flex flex-col gap-6">
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+              <div class="text-3xl font-bold text-blue-700 mb-2">
+                {currencyFormat.format(vehicle.overview.price)}
+              </div>
+              <div class="text-gray-500 text-sm mb-2">Verkaufspreis</div>
+              {/* Add financing/leasing info here if available */}
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold mb-2">Händlerinformation</h3>
+              <div class="mb-2">{vehicle.overview.vehicleLocation.name}</div>
+              <div class="text-sm text-gray-600 mb-1">
+                {vehicle.overview.vehicleLocation.street}
+                <br />
+                {vehicle.overview.vehicleLocation.postalCode}{" "}
+                {vehicle.overview.vehicleLocation.city}
+              </div>
+              {/* Add contact button/phone if available */}
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+              <h4 class="font-semibold mb-1">Weitere Vorteile</h4>
+              <ul class="list-disc list-inside text-sm text-gray-700">
+                <li>Gewährleistung</li>
+                <li>Servicegepflegt</li>
+                {/* Add more features if available */}
+              </ul>
+            </div>
+          </div>
         </div>
       )
     }
