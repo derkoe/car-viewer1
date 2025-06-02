@@ -1,0 +1,31 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const { id } = Astro.params;
+const response = await fetch(
+  `https://www.dasweltauto.at/api/locales/de_AT/vehicles/${id}/detail`
+);
+if (!response.ok) {
+  throw new Error("Failed to fetch vehicle data");
+}
+const vehicle = await response.json();
+const currencyFormat = new Intl.NumberFormat("de-DE", {
+  style: "currency",
+  currency: "EUR",
+});
+---
+
+<Layout>
+  <main>
+    <h1>Welcome to Astro!</h1>
+    {
+      vehicle && (
+        <div>
+          <h2>{vehicle.overview.header}</h2>
+          <p>{vehicle.overview.subHeader}</p>
+          <p>Price: {currencyFormat.format(vehicle.overview.price)}</p>
+        </div>
+      )
+    }
+  </main>
+</Layout>
